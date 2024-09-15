@@ -1,7 +1,7 @@
 #Note
 #Bấm t để thực hiện function 1
 #Bấm r để thực hiện function 2
-#Lăn chuột để thực hiện funciton 3
+#Lăn chuột để thực hiện funciton 3 hoặc bấm phím s để scale theo tỉ lệ tùy chọn
 #Các thông số tương tác qua terminal
 
 import cv2
@@ -108,6 +108,23 @@ def rotate_rectangle(angle_deg):
         cv2.line(img, pt1, pt2, (0, 255, 0), 2)
     return img
 
+def scale_rectangle(scale):
+    global rectangle_pts
+
+    img = create_white_background(640, 480)
+    cx, cy = np.mean(rectangle_pts, axis=0)
+
+    rotation_matrix = cv2.getRotationMatrix2D((cx, cy), 0, scale)
+    rectangle_pts_homogeneous = np.hstack([rectangle_pts, np.ones((4, 1))])
+
+    rectangle_pts = np.dot(rectangle_pts_homogeneous, rotation_matrix.T)
+
+    for i in range(4):
+        pt1 = tuple(map(int, rectangle_pts[i]))
+        pt2 = tuple(map(int, rectangle_pts[(i + 1) % 4])) 
+        cv2.line(img, pt1, pt2, (0, 255, 0), 2)
+    return img
+
 if __name__ == "__main__":
     img = create_white_background(640, 480)
     cv2.namedWindow('image')
@@ -125,6 +142,9 @@ if __name__ == "__main__":
         elif key == ord('r'):
             angle = float(input("Enter rotation angle: "))
             img = rotate_rectangle(angle)
+        elif key == ord('s'):
+            scale = float(input("Enter scale: "))
+            img = scale_rectangle(scale)
         elif key == 27:
             break
         elif cv2.getWindowProperty('image', cv2.WND_PROP_VISIBLE) < 1:
